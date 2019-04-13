@@ -1,79 +1,71 @@
-#!/usr/bin/env python
-# -*- coding:UTF-8 -*-
-# File Name : collect_hdemo.py
-# Creation Date : 12-04-2019
-# Created By : Jeasine Ma [jeasinema[at]gmail[dot]com]
-
+import argparse
 import gym
+import gym.spaces
 import gym_gridworld
+import os
 import sys
-import tty
 import termios
+import pickle
+from itertools import count
+import numpy as np
+
+from play import get
+
+parser = argparse.ArgumentParser(description='Save expert trajectory')
+parser.add_argument('--tag', default="default", metavar='G')
+parser.add_argument('--env-name', default="Hopper-v1", metavar='G',
+                    help='name of the environment to run')
+parser.add_argument('--max-expert-state-num', type=int, default=50000, metavar='N',
+                    help='maximal number of main iterations (default: 50000)')
+args = parser.parse_args()
+
+env = gym.make(args.env_name)
+env.verbose = True
+expert_traj = []
 
 
-class _Getch:
-    def __call__(self):
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(sys.stdin.fileno())
-            ch = sys.stdin.read(3)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
+def main_loop():
 
+    num_steps = 0
 
-def get():
-    inkey = _Getch()
-    while(1):
-        k = inkey()
-        if k != '':
+    for i_episode in count():
+
+        state = env.reset()
+        reward_episode = 0
+        reward_show_episode = 0
+
+        for t in range(10000):
+            action = get()
+            if action is None:
+                continue
+            else:
+                next_state, reward, done, opt = env.step(action)
+            try:
+                tmp = opt['show']
+            except:
+                opt['show'] = 0
+            reward_episode += reward
+            reward_show_episode += opt['show']
+
+            num_steps += 1
+
+            expert_traj.append(
+                np.hstack([state, action, next_state, reward, done, opt['show']]))
+
+            if done:
+                break
+
+            state = next_state
+
+        print('Episode {}\t reward: {:.2f}\t reward_show: {:.2f} \tnum_steps: \
+              {}/{}'.format(i_episode, reward_episode, reward_show_episode, num_steps,
+                            args.max_expert_state_num))
+
+        if num_steps >= args.max_expert_state_num:
             break
-    print(k)
-    if k == '\x1b[A':
-        # print("up")
-        return 1
-    elif k == 'www':
-        return 5
-    elif k == '\x1b[B':
-        # print("down")
-        return 2
-    elif k == 'sss':
-        return 6
-    elif k == '\x1b[C':
-        # print("right")
-        return 4
-    elif k == 'ddd':
-        return 8
-    elif k == '\x1b[D':
-        # print("left")
-        return 3
-    elif k == 'aaa':
-        return 7
-    elif k == '000':
-        return 0
-    else:
-        # print("not an arrow key!")
-        return None
 
 
-def main():
-    env = gym.make('gridworldrandom-v0')
-    env.verbose = True
-    r_sum = 0
-    while True:
-        ret = get()
-        if ret is None:
-            continue
-        else:
-            a, b, c, d = env.step(ret)
-            r_sum += b
-            print('r: {} r_sum: {}'.format(b, r_sum))
-            if c == True:
-                env.reset()
-                print('game done, r: {}'.format(r_sum))
-                r_sum = 0
-
-
-if __name__ == '__main__':
-    main()
+main_loop()
+expert_traj = np.stack(expert_traj)
+pickle.dump(expert_traj, open('{}_{}_expert_traj.p'.format(args.tag, args.env_name),
+            'wb'), protocol=pickle.HIGHEST_PROTOCOL)
