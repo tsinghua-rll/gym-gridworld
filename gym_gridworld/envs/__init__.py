@@ -1,2 +1,2 @@
-from gym_gridworld.envs.gridworld_env import GridworldEnv,GridworldRandomEnv,GridworldRGBEnv
+from gym_gridworld.envs.gridworld_env import GridworldEnv,GridworldRandomEnv,SimpleGridworldEnv,SimpleGridworldRandomEnv,SimpleGridworldRGBEnv
 
