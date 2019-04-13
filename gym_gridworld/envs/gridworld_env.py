@@ -225,9 +225,7 @@ class GridworldRandomEnv(gym.Env):
     def change_start_state(self, sp):
         ''' change agent start state '''
         ''' Input: sp: new start state '''
-        if self.agent_start_state[0] == sp[0] and self.agent_start_state[1] == sp[1]:
-            return True
-        elif self.start_grid_map[sp[0], sp[1]] not in [0, 3, 4]:
+        if self.start_grid_map[sp[0], sp[1]] not in [0, 3, 4]:
             return False
         else:
             s_pos = copy.deepcopy(self.agent_start_state)
@@ -241,9 +239,7 @@ class GridworldRandomEnv(gym.Env):
 
 
     def change_target_state(self, tg):
-        if self.agent_target_state[0] == tg[0] and self.agent_target_state[1] == tg[1]:
-            return True
-        elif self.start_grid_map[tg[0], tg[1]] not in [0, 3, 4]:
+        if self.start_grid_map[tg[0], tg[1]] not in [0, 3, 4]:
             return False
         else:
             t_pos = copy.deepcopy(self.agent_target_state)
