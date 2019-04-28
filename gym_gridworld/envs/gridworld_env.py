@@ -90,7 +90,7 @@ class GridworldRandomEnv(gym.Env):
             reward -= 1
 
         if action <= 4 and new_color == 2:
-            reward -= 20
+            reward -= 100
 
         if self.cur_iter > self.max_iterations:
             # self.observation = self.reset()
