@@ -24,3 +24,7 @@ register(
     id='simplegridworldrandom-v0',
     entry_point='gym_gridworld.envs:SimpleGridworldRandomEnv',
 )
+register(
+    id='gridworldaa-v0',
+    entry_point='gym_gridworld.envs:GridworldAAEnv',
+)
